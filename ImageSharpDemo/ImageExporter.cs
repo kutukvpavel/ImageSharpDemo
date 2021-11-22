@@ -10,23 +10,21 @@ namespace ImageSharpDemo
     {
         public static Font TagFont { get; set; } = new Font(SystemFonts.Get("Arial"), 200);
 
-        public static void DrawRect(Rectangle bounds, PlottableRect pRect, float tagRotation)
+        public static void DrawRect(Rectangle bounds, string tag, float tagRotation)
         {
-            RectangleF r = pRect.Rect;
-            var textPoint = RectangleF.Center(r);
-            var tMeasure = TextMeasurer.Measure(pRect.Tag, new TextOptions(TagFont));
-            float tLenOffset = -tMeasure.Width / 2;
-            float tHOffset = -tMeasure.Height / 2;
-            textPoint.Offset(tHOffset, -tLenOffset); //Right for vertical orientation, doesn't matter since the example uses a square
-            var matrix = Matrix3x2Extensions.CreateRotationDegrees(tagRotation, textPoint);
-
             using Image<Rgba32> image = new Image<Rgba32>(bounds.Width, bounds.Height, Color.Black);
 
-            image.Mutate(x => x.Fill(pRect.Color, r));
+            var textPoint = RectangleF.Center(bounds);
+            var rdo = new DrawingOptions { Transform = Matrix3x2Extensions.CreateRotationDegrees(tagRotation, textPoint) };
             image.Mutate(x =>
             {
-                var rdo = new DrawingOptions { Transform = matrix };
-                x.DrawText(rdo, pRect.Tag, TagFont, Color.White, textPoint);
+                x.DrawText(rdo, tag, TagFont, Color.White, textPoint);
+            });
+
+            //Optional
+            var tMeasure = TextMeasurer.Measure(tag, new TextOptions(TagFont));
+            image.Mutate(x =>
+            {
                 x.Draw(rdo, Color.White, 5.0f, new RectangleF(textPoint, new SizeF(tMeasure.Width, tMeasure.Height)));
             });
 
